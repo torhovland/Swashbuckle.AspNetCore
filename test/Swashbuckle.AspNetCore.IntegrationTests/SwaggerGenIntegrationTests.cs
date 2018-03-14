@@ -11,6 +11,7 @@ namespace Swashbuckle.AspNetCore.IntegrationTests
     {
         private readonly ITestOutputHelper _output;
         private readonly HttpClient _validatorClient;
+        private readonly HttpClient _openApiValidatorClient;
 
         public SwaggerGenIntegrationTests(ITestOutputHelper output)
         {
@@ -18,6 +19,10 @@ namespace Swashbuckle.AspNetCore.IntegrationTests
             _validatorClient = new HttpClient
             {
                 BaseAddress = new Uri("http://online.swagger.io")
+            };
+            _openApiValidatorClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://mermade.org.uk")
             };
         }
 
@@ -40,7 +45,11 @@ namespace Swashbuckle.AspNetCore.IntegrationTests
 
             swaggerResponse.EnsureSuccessStatusCode();
             await AssertResponseDoesNotContainByteOrderMark(swaggerResponse);
-            await AssertValidSwaggerAsync(swaggerResponse);
+
+            if (swaggerRequestUri.EndsWith("/openapi.json"))
+                await AssertValidOpenApiAsync(swaggerResponse);
+            else
+                await AssertValidSwaggerAsync(swaggerResponse);
         }
 
         private async Task AssertResponseDoesNotContainByteOrderMark(HttpResponseMessage swaggerResponse)
@@ -66,6 +75,18 @@ namespace Swashbuckle.AspNetCore.IntegrationTests
         private async Task AssertValidSwaggerAsync(HttpResponseMessage swaggerResponse)
         {
             var validationResponse = await _validatorClient.PostAsync("/validator/debug", swaggerResponse.Content);
+
+            validationResponse.EnsureSuccessStatusCode();
+            var validationErrorsString = await validationResponse.Content.ReadAsStringAsync();
+            _output.WriteLine(validationErrorsString);
+
+            Assert.Equal("{}", validationErrorsString);
+        }
+
+        private async Task AssertValidOpenApiAsync(HttpResponseMessage swaggerResponse)
+        {
+            var content = new MultipartFormDataContent {{swaggerResponse.Content, "source"}};
+            var validationResponse = await _openApiValidatorClient.PostAsync("/api/v1/validate", content);
 
             validationResponse.EnsureSuccessStatusCode();
             var validationErrorsString = await validationResponse.Content.ReadAsStringAsync();
