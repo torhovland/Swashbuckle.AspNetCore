@@ -85,7 +85,8 @@ namespace Basic
             app.UseSwaggerUI(c =>
             {
                 c.RoutePrefix = ""; // serve the UI at root
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "V1 Docs");
+                c.SwaggerEndpoint("/openapi/v1/openapi.json", "V1 OpenAPI 3.0 Docs");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "V1 Swagger 2.0 Docs");
             });
         }
     }

@@ -17,6 +17,7 @@ namespace Swashbuckle.AspNetCore.Swagger
         private readonly JsonSerializer _swaggerSerializer;
         private readonly SwaggerOptions _options;
         private readonly TemplateMatcher _requestMatcher;
+        private readonly TemplateMatcher _openApiRequestMatcher;
 
         public SwaggerMiddleware(
             RequestDelegate next,
@@ -29,6 +30,7 @@ namespace Swashbuckle.AspNetCore.Swagger
             _swaggerSerializer = SwaggerSerializerFactory.Create(mvcJsonOptions);
             _options = options;
             _requestMatcher = new TemplateMatcher(TemplateParser.Parse(options.RouteTemplate), new RouteValueDictionary());
+            _openApiRequestMatcher = new TemplateMatcher(TemplateParser.Parse(options.OpenApiRouteTemplate), new RouteValueDictionary());
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -61,7 +63,8 @@ namespace Swashbuckle.AspNetCore.Swagger
             if (request.Method != "GET") return false;
 
 			var routeValues = new RouteValueDictionary();
-            if (!_requestMatcher.TryMatch(request.Path, routeValues) || !routeValues.ContainsKey("documentName")) return false;
+            if (!_requestMatcher.TryMatch(request.Path, routeValues) && !_openApiRequestMatcher.TryMatch(request.Path, routeValues)) return false;
+            if (!routeValues.ContainsKey("documentName")) return false;
 
             documentName = routeValues["documentName"].ToString();
             return true;

@@ -23,6 +23,7 @@ namespace Swashbuckle.AspNetCore.IntegrationTests
 
         [Theory]
         [InlineData(typeof(Basic.Startup), "/swagger/v1/swagger.json")]
+        [InlineData(typeof(Basic.Startup), "/openapi/v1/openapi.json")]
         [InlineData(typeof(CustomUIConfig.Startup), "/swagger/v1/swagger.json")]
         [InlineData(typeof(CustomUIIndex.Startup), "/swagger/v1/swagger.json")]
         [InlineData(typeof(GenericControllers.Startup), "/swagger/v1/swagger.json")]
