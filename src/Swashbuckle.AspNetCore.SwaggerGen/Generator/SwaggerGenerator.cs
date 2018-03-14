@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.Swagger.Model;
 
 namespace Swashbuckle.AspNetCore.SwaggerGen
 {
@@ -50,6 +51,55 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             var securityRequirements = _settings.SecurityRequirements;
 
             var swaggerDoc = new SwaggerDocument
+            {
+                Info = info,
+                Host = host,
+                BasePath = basePath,
+                Schemes = schemes,
+                Paths = paths,
+                Definitions = schemaRegistry.Definitions,
+                SecurityDefinitions = securityDefinitions.Any() ? securityDefinitions : null,
+                Security = securityRequirements.Any() ? securityRequirements : null
+            };
+
+            var filterContext = new DocumentFilterContext(
+                _apiDescriptionsProvider.ApiDescriptionGroups,
+                schemaRegistry);
+
+            foreach (var filter in _settings.DocumentFilters)
+            {
+                filter.Apply(swaggerDoc, filterContext);
+            }
+
+            return swaggerDoc;
+        }
+
+        public SwaggerDocument GetOpenApi(
+            string documentName,
+            string host = null,
+            string basePath = null,
+            string[] schemes = null)
+        {
+            var schemaRegistry = _schemaRegistryFactory.Create();
+
+            Info info;
+            if (!_settings.SwaggerDocs.TryGetValue(documentName, out info))
+                throw new UnknownSwaggerDocument(documentName);
+
+            var apiDescriptions = _apiDescriptionsProvider.ApiDescriptionGroups.Items
+                .SelectMany(group => group.Items)
+                .Where(apiDesc => _settings.DocInclusionPredicate(documentName, apiDesc))
+                .Where(apiDesc => !_settings.IgnoreObsoleteActions || !apiDesc.IsObsolete())
+                .OrderBy(_settings.SortKeySelector);
+
+            var paths = apiDescriptions
+                .GroupBy(apiDesc => apiDesc.RelativePathSansQueryString())
+                .ToDictionary(group => "/" + group.Key, group => CreatePathItem(group, schemaRegistry));
+
+            var securityDefinitions = _settings.SecurityDefinitions;
+            var securityRequirements = _settings.SecurityRequirements;
+
+            var swaggerDoc = new OpenApiDocument
             {
                 Info = info,
                 Host = host,

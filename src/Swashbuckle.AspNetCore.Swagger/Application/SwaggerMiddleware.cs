@@ -46,7 +46,11 @@ namespace Swashbuckle.AspNetCore.Swagger
                 ? null
                 : httpContext.Request.PathBase.ToString();
 
-            var swagger = _swaggerProvider.GetSwagger(documentName, null, basePath);
+            var path = httpContext.Request.Path;
+
+            var swagger = path.HasValue && path.Value.EndsWith("/openapi.json")
+                ? _swaggerProvider.GetOpenApi(documentName, null, basePath)
+                : _swaggerProvider.GetSwagger(documentName, null, basePath);
 
             // One last opportunity to modify the Swagger Document - this time with request context
             foreach (var filter in _options.PreSerializeFilters)

@@ -9,6 +9,12 @@ namespace Swashbuckle.AspNetCore.Swagger
             string host = null,
             string basePath = null,
             string[] schemes = null);
+
+        SwaggerDocument GetOpenApi(
+            string documentName,
+            string host = null,
+            string basePath = null,
+            string[] schemes = null);
     }
 
     public class UnknownSwaggerDocument : Exception
