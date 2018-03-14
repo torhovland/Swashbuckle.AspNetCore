@@ -10,7 +10,7 @@ namespace Swashbuckle.AspNetCore.Swagger
             string basePath = null,
             string[] schemes = null);
 
-        SwaggerDocument GetOpenApi(
+        OpenApiDocument GetOpenApi(
             string documentName,
             string host = null,
             string basePath = null,

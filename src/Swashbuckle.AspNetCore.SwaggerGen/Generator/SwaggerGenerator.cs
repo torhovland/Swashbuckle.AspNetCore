@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.Swagger;
-using Swashbuckle.AspNetCore.Swagger.Model;
 
 namespace Swashbuckle.AspNetCore.SwaggerGen
 {
@@ -74,7 +73,7 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
             return swaggerDoc;
         }
 
-        public SwaggerDocument GetOpenApi(
+        public OpenApiDocument GetOpenApi(
             string documentName,
             string host = null,
             string basePath = null,
@@ -110,15 +109,6 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
                 SecurityDefinitions = securityDefinitions.Any() ? securityDefinitions : null,
                 Security = securityRequirements.Any() ? securityRequirements : null
             };
-
-            var filterContext = new DocumentFilterContext(
-                _apiDescriptionsProvider.ApiDescriptionGroups,
-                schemaRegistry);
-
-            foreach (var filter in _settings.DocumentFilters)
-            {
-                filter.Apply(swaggerDoc, filterContext);
-            }
 
             return swaggerDoc;
         }
