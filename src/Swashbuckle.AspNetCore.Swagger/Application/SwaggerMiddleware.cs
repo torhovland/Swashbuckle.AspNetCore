@@ -47,18 +47,25 @@ namespace Swashbuckle.AspNetCore.Swagger
                 : httpContext.Request.PathBase.ToString();
 
             var path = httpContext.Request.Path;
+            object document;
 
-            Document swagger = path.HasValue && path.Value.EndsWith("/openapi.json")
-                ? (Document)_swaggerProvider.GetOpenApi(documentName, null, basePath)
-                : (Document)_swaggerProvider.GetSwagger(documentName, null, basePath);
-
-            // One last opportunity to modify the Swagger Document - this time with request context
-            foreach (var filter in _options.PreSerializeFilters)
+            if (path.HasValue && path.Value.EndsWith("/openapi.json"))
             {
-                filter(swagger, httpContext.Request);
+                document = _swaggerProvider.GetOpenApi(documentName, null, basePath);
+            }
+            else
+            {
+                var swagger = _swaggerProvider.GetSwagger(documentName, null, basePath);
+                document = swagger;
+
+                // One last opportunity to modify the Swagger Document - this time with request context
+                foreach (var filter in _options.PreSerializeFilters)
+                {
+                    filter(swagger, httpContext.Request);
+                }
             }
 
-            await RespondWithSwaggerJson(httpContext.Response, swagger);
+            await RespondWithSwaggerJson(httpContext.Response, document);
         }
 
         private bool RequestingSwaggerDocument(HttpRequest request, out string documentName)
@@ -74,7 +81,7 @@ namespace Swashbuckle.AspNetCore.Swagger
             return true;
         }
 
-        private async Task RespondWithSwaggerJson(HttpResponse response, Document swagger)
+        private async Task RespondWithSwaggerJson(HttpResponse response, object swagger)
         {
             response.StatusCode = 200;
             response.ContentType = "application/json";

@@ -100,14 +100,6 @@ namespace Swashbuckle.AspNetCore.SwaggerGen
 
             var swaggerDoc = new OpenApiDocument
             {
-                Info = info,
-                Host = host,
-                BasePath = basePath,
-                Schemes = schemes,
-                Paths = paths,
-                Definitions = schemaRegistry.Definitions,
-                SecurityDefinitions = securityDefinitions.Any() ? securityDefinitions : null,
-                Security = securityRequirements.Any() ? securityRequirements : null
             };
 
             return swaggerDoc;

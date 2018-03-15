@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Swashbuckle.AspNetCore.Swagger
 {
-    public class SwaggerDocument : Document
+    public class SwaggerDocument
     {
         public SwaggerDocument()
         {
@@ -16,6 +16,8 @@ namespace Swashbuckle.AspNetCore.Swagger
         }
 
         public Info Info { get; set; }
+
+        public string Host { get; set; }
 
         public string BasePath { get; set; }
 
@@ -43,11 +45,6 @@ namespace Swashbuckle.AspNetCore.Swagger
 
         [JsonExtensionData]
         public Dictionary<string, object> Extensions { get; private set; }
-    }
-
-    public class Document
-    {
-        public string Host { get; set; }
     }
 
     public class Info
